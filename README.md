@@ -1,8 +1,9 @@
 # dehydrated-clouddns
-Dehydrated hook for solving ACME challenges via [CloudDNS API][clouddns]
+Dehydrated hook for solving ACME challenges via [CloudDNS API][clouddns].
 
 ## Features
-- Solve ACME challenge in dehydrated using [CloudDNS API][clouddns]
+- Solve ACME challenge in dehydrated using [CloudDNS API][clouddns].
+- Generate wildcard certificates.
 
 ## Installation
 Just clone the repository:

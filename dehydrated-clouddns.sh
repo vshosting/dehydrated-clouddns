@@ -11,6 +11,25 @@ set -o pipefail # Error if pipe fails
 
 CLOUDDNS_API='https://admin.vshosting.cloud/clouddns'
 CLOUDDNS_LOGIN_API='https://admin.vshosting.cloud/api/public/auth/login'
+PROPAGATION_TIME=100
+
+# Main control flow
+# Args: $1 (required): Hook to use.
+#       $1 (required): Domain to add record for.
+#       $2 (not used): DNS Record filename.
+#       $3 (required): DNS record content.
+function main() {
+    case "${1:-}" in
+        deploy_challenge)
+            shift
+            deploy_challenge "$@"
+            ;;
+        clean_challenge)
+            shift
+            clean_challenge "$@"
+            ;;
+    esac
+}
 
 # Clean up dns-01 ACME challenge record via CloudDNS API.
 # Args: $1 (required): Domain to add record for.
@@ -51,7 +70,7 @@ function deploy_challenge() {
     _publish_records "${domain_id}"
 
     echo "  + Waiting for propagation..."
-    sleep 100
+    sleep ${PROPAGATION_TIME}
 }
 
 # Add TXT record to DNS zone.
@@ -199,13 +218,5 @@ function _request() {
     fi
 }
 
-case "${1:-}" in
-    deploy_challenge)
-        shift
-        deploy_challenge "$@"
-        ;;
-    clean_challenge)
-        shift
-        clean_challenge "$@"
-        ;;
-esac
+# Run the script
+main "$@"
