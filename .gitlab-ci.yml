@@ -1,0 +1,10 @@
+stages:
+  - lint
+
+lint:shellcheck:
+  image: koalaman/shellcheck-alpine:stable
+  stage: lint
+  script: shellcheck dehydrated-clouddns.sh
+  only:
+    changes:
+      - '*.sh'
