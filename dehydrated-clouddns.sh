@@ -81,7 +81,7 @@ function _add_record() {
     response=$(_api_request "POST" "record-txt" "${data}")
 
     # If adding record failed (error:) then print error message
-    if [[ "${response// /}" == *'"error"'* ]]; then
+    if [[ "${response}" == *'"error"'* ]]; then
         local re='"message":"([^"]+)"'
         if [[ "${response}" =~ ${re} ]]; then
             _err "DNS challenge not added: ${BASH_REMATCH[1]}"
@@ -101,7 +101,7 @@ function _api_request() {
         _login
     fi
     auth_header="Authorization: Bearer $CLOUDDNS_TOKEN"
-    _request "$1" "$CLOUDDNS_API/$2" "${3:-}" "${auth_header}" | tr -d '\t\r\n '
+    _request "$1" "$CLOUDDNS_API/$2" "${3:-}" "${auth_header}" | _remove_whitespace
 }
 
 # Delete a record from DNS zone.
@@ -110,7 +110,7 @@ function _delete_record() {
     response=$(_api_request "DELETE" "record/$1")
 
     # If adding record failed (error:) then print error message
-    if [[ "${response// /}" == *'"error"'* ]]; then
+    if [[ "${response}" == *'"error"'* ]]; then
         local re='"message":"([^"]+)"'
         if [[ "${response}" =~ ${re} ]]; then
             _err "DNS challenge not added: ${BASH_REMATCH[1]}"
@@ -199,6 +199,11 @@ function _login() {
 # Args: $1 (required): Domain id.
 function _publish_records() {
     _api_request "PUT" "domain/$1/publish" "{\"soaTtl\":300}" >/dev/null
+}
+
+# Remove whitespace from input JSON.
+function _remove_whitespace() {
+    tr -d '\r\n\t' | sed -r -e 's/ +/ /g' -e 's/ ([}\]])/\1/g' -e 's/([{:,]) /\1/g'
 }
 
 # Make an HTTP request.
