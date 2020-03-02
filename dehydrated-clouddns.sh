@@ -69,8 +69,7 @@ function deploy_challenge() {
     _add_record "${domain_id}" "${record_name}" "${record_value}"
     _publish_records "${domain_id}"
 
-    echo "  + Waiting for propagation..."
-    sleep ${PROPAGATION_TIME}
+    _wait_for_propagation "${record_name}" "${record_value}"
 }
 
 # Add TXT record to DNS zone.
@@ -136,7 +135,6 @@ function _get_domain_id() {
     response=$(_api_request "POST" "domain/search" "${data}")
 
     local re='domainType":"[^"]*","id":"([^,]*)",' # Match domain id
-    #if [[ "${response//[$'\t\r\n ']}" =~ $re ]]; then
     if [[ "${response}" =~ ${re} ]]; then
         domain_id="${BASH_REMATCH[1]}"
     fi
@@ -215,6 +213,28 @@ function _request() {
     else
         local header='Content-Type: application/json'
         curl --silent --header "${header}" --header "${4:-}" -X "$1" "$2" --data "$3"
+    fi
+}
+
+# Wait for DNS record to propagate.
+# Args: $1 (required): DNS record name.
+#       $2 (required): DNS record value.
+function _wait_for_propagation() {
+    if command -v host >/dev/null 2>&1; then
+        # Somehow, the pipe fails, even though PIPESTATUS of all commands is 0
+        set +o pipefail
+        name_server="$(host "$1" NS | grep "Address" | cut -d '#' -f 1 | cut -c 10-)"
+        set -o pipefail
+        ## Check primary nameserver, until it returns the correct DNS record value
+        until host -t TXT "$1" "${name_server}" | grep -q "$2"; do
+            local sleep_time=10
+            echo "  + Waiting ${sleep_time}s for propagation..."
+            sleep $sleep_time
+        done
+    else
+        # DNS utility is not available, just sleep for default propagation time
+        echo "  + Waiting ${PROPAGATION_TIME}s for propagation..."
+        sleep ${PROPAGATION_TIME}
     fi
 }
 
