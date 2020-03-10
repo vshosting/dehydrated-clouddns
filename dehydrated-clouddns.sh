@@ -15,9 +15,9 @@ PROPAGATION_TIME=100
 
 # Main control flow
 # Args: $1 (required): Hook to use.
-#       $1 (required): Domain to add record for.
-#       $2 (not used): DNS Record filename.
-#       $3 (required): DNS record content.
+#       $2 (required): Domain to add record for.
+#       $3 (not used): DNS record filename.
+#       $4 (required): DNS record content.
 function main() {
     case "${1:-}" in
         deploy_challenge)
