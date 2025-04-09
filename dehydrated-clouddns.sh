@@ -228,7 +228,7 @@ function _wait_for_propagation() {
     if command -v host >/dev/null 2>&1; then
         # Somehow, the pipe fails, even though PIPESTATUS of all commands is 0
         set +o pipefail
-        name_server="$(host "$1" NS | grep "Address" | cut -d '#' -f 1 | cut -c 10-)"
+        name_server="$(host -t NS "$(echo "${1}" | awk -F'.' '{print $(NF-1)"."$NF}')" | grep "name server" | cut -d ' ' -f 4 | head -n 1)"
         set -o pipefail
         ## Check primary nameserver, until it returns the correct DNS record value
         until host -t TXT "$1" "${name_server}" | grep -q "$2"; do
