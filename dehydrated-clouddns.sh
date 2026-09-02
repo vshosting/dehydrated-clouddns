@@ -231,7 +231,7 @@ function _wait_for_propagation() {
         name_server="$(host -t NS "$(echo "${1}" | awk -F'.' '{print $(NF-1)"."$NF}')" | grep "name server" | cut -d ' ' -f 4 | head -n 1)"
         set -o pipefail
         ## Check primary nameserver, until it returns the correct DNS record value
-        until host -t TXT "$1" "${name_server}" | grep -q "$2"; do
+        until host -t TXT "$1" "${name_server}" | grep -qe "$2"; do
             local sleep_time=10
             echo "  + Waiting ${sleep_time}s for propagation..."
             sleep $sleep_time
